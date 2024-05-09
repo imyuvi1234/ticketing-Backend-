@@ -1,0 +1,6 @@
+booking_id,event_id,user_id,ticket_number,booking_details
+1,1,1,2,"{""abc"":""pqr""}"
+2,1,2,2,"{""abc"":""pqr""}"
+3,2,3,2,"{""abc"":""pqr""}"
+4,2,4,2,"{""abc"":""pqr""}"
+5,3,5,2,"{""abc"":""pqr""}"
