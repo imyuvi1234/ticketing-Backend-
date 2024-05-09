@@ -9,6 +9,21 @@ import ast
 
 app = FastAPI()
 
+# Configure CORS
+origins = [
+    "http://localhost:3000",  # Your frontend application
+    # Add more origins if needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 class SignupRequest(BaseModel):
     firstname: str
