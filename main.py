@@ -47,6 +47,12 @@ class BookingRequest(BaseModel):
     booking_details: Optional[str] = None
 
 
+class ChangePasswordRequest(BaseModel):
+    email: str
+    old_password: str
+    new_password: str
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -207,6 +213,29 @@ def get_booking_details(event_id: Optional[int] = None, user_id: Optional[int] =
 
     return bookings
 
+
+@app.post("/changepassword")
+def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db)):
+    # Search for the user in the database
+    user = db.query(User).filter(User.email == request.email).first()
+
+    if not user or user.password != request.old_password:
+        raise HTTPException(status_code=401, detail="Invalid user id or password")
+
+    # Update the user's password
+    user.password = request.new_password
+    db.commit()
+
+    # Return the user as a dictionary
+    return {
+        "userid": user.userid,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+        "email": user.email,
+        "username": user.username,
+        "password": user.password,
+        "profile_image": user.profile_image
+    }
 
 if __name__ == "__main__":
     import uvicorn
