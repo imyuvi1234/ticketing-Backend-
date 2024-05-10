@@ -36,7 +36,7 @@ class SignupRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    username: str
+    email: str
     password: str
 
 
@@ -58,7 +58,7 @@ def get_db():
 @app.post("/login")
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     # Search for the user in the database
-    user = db.query(User).filter(User.username == request.username).first()
+    user = db.query(User).filter(User.email == request.email).first()
 
     if not user or user.password != request.password:
         raise HTTPException(status_code=401, detail="Invalid username or password")
@@ -135,6 +135,35 @@ def get_event_details(event_id: int, db: Session = Depends(get_db)):
         "event_key_items": ast.literal_eval(event.event_key_items) if event.event_key_items else []
     }
 
+
+@app.get("/usereventdetails/{user_id}")
+def get_user_event_details(user_id: int, db: Session = Depends(get_db)):
+    # Fetch all bookings for the given user
+    bookings = db.query(Bookings).filter(Bookings.user_id == user_id).all()
+
+    # Initialize an empty list to store event details
+    event_details = []
+
+    # For each booking, fetch the corresponding event details
+    for booking in bookings:
+        event = db.query(Events).filter(Events.event_id == booking.event_id).first()
+        if event is not None:
+            event_detail = {
+                "event_id": event.event_id,
+                "event_title": event.event_title,
+                "event_date": event.event_date,
+                "event_time": event.event_time,
+                "event_description": event.event_description,
+                "event_image": event.event_image,
+                "event_key_items": ast.literal_eval(event.event_key_items) if event.event_key_items else []
+            }
+            event_details.append(event_detail)
+
+    # If no events found for the user, raise an exception
+    if not event_details:
+        raise HTTPException(status_code=404, detail="No events found for this user")
+
+    return event_details
 
 @app.get("/alleventdetails")
 def get_all_event_details(db: Session = Depends(get_db)):
