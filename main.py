@@ -63,7 +63,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     if not user or user.password != request.password:
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    return {"message": "Login successful!"}
+    return user
 
 
 @app.post("/signup")
