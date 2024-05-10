@@ -38,7 +38,7 @@ class Bookings(Base):
                              default={"abc": "xyz"})
 
 
-DATABASE_URL = "mysql+mysqlconnector://root:root@localhost/esrs"
+DATABASE_URL = "mysql+mysqlconnector://root:root123@localhost/esrs"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
