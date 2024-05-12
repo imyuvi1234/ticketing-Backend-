@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import mysql.connector
 
 Base = declarative_base()
 
@@ -37,8 +38,8 @@ class Bookings(Base):
     booking_details = Column(String(500), nullable=False,
                              default={"abc": "xyz"})
 
-
-DATABASE_URL = "mysql+mysqlconnector://root:root123@localhost/esrs"
+  # mysql+pymysql://<db_user>:<db_pass>@<db_host>:<db_port>/<db_name>
+DATABASE_URL = "mysql+pymysql://root:root123@35.197.247.203:3306/esrs"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
