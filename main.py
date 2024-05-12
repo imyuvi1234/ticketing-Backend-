@@ -14,7 +14,7 @@ app = FastAPI()
 
 # Configure CORS
 origins = [
-    "http://localhost:3000",  # Your frontend application
+    "https://ticketing-backend-iiyn.onrender.com",  # Your frontend application
     # Add more origins if needed
 ]
 
