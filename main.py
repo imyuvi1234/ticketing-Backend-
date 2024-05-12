@@ -7,6 +7,8 @@ from models import User, SessionLocal, Events, Bookings
 from typing import Optional
 from typing import List
 import ast
+import uvicorn
+import os
 
 app = FastAPI()
 
@@ -238,6 +240,4 @@ def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db
     }
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("your_module_name:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
