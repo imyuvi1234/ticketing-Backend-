@@ -7,25 +7,22 @@ from models import User, SessionLocal, Events, Bookings
 from typing import Optional
 from typing import List
 import ast
-import uvicorn
-import os
 
 app = FastAPI()
 
 # Configure CORS
 origins = [
-    "https://ticketing-backend-iiyn.onrender.com",  # Your frontend application
+    "http://localhost:3000",  # Your frontend application
     # Add more origins if needed
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 class SignupRequest(BaseModel):
@@ -163,7 +160,9 @@ def get_user_event_details(user_id: int, db: Session = Depends(get_db)):
                 "event_time": event.event_time,
                 "event_description": event.event_description,
                 "event_image": event.event_image,
-                "event_key_items": ast.literal_eval(event.event_key_items) if event.event_key_items else []
+                "event_key_items": ast.literal_eval(event.event_key_items) if event.event_key_items else [],
+                "ticket_number": booking.ticket_number,
+                "booking_details": ast.literal_eval(booking.booking_details) if booking.booking_details else {}
             }
             event_details.append(event_detail)
 
@@ -173,16 +172,33 @@ def get_user_event_details(user_id: int, db: Session = Depends(get_db)):
 
     return event_details
 
-@app.get("/alleventdetails")
-def get_all_event_details(db: Session = Depends(get_db)):
-    events = db.query(Events).all()
 
-    return events
+@app.get("/alleventdetails")
+def get_all_event_details(user_id: Optional[int] = None, db: Session = Depends(get_db)):
+    events = db.query(Events).all()
+    event_list = []
+    for event in events:
+        event_dict = {
+            "event_id": event.event_id,
+            "event_title": event.event_title,
+            "event_date": event.event_date,
+            "event_time": event.event_time,
+            "event_description": event.event_description,
+            "event_image": event.event_image,
+            "event_key_items": ast.literal_eval(event.event_key_items) if event.event_key_items else [],
+            "ticket_number": 0
+        }
+        if user_id is not None:
+            booking = db.query(Bookings).filter(Bookings.user_id == user_id,
+                                                Bookings.event_id == event.event_id).first()
+            if booking:
+                event_dict["ticket_number"] = booking.ticket_number
+        event_list.append(event_dict)
+    return event_list
 
 
 @app.post("/booking")
 def create_booking(request: BookingRequest, db: Session = Depends(get_db)):
-
     new_booking = Bookings(
         event_id=request.event_id,
         user_id=request.user_id,
@@ -208,7 +224,8 @@ def get_booking_details(event_id: Optional[int] = None, user_id: Optional[int] =
     if not bookings:
         raise HTTPException(status_code=404, detail="No bookings found")
     for booking in bookings:
-        if isinstance(booking.booking_details, str) and booking.booking_details.startswith('{') and booking.booking_details.endswith('}'):
+        if isinstance(booking.booking_details, str) and booking.booking_details.startswith(
+                '{') and booking.booking_details.endswith('}'):
             booking.booking_details = ast.literal_eval(booking.booking_details)
         else:
             booking.booking_details = str(booking.booking_details)
@@ -238,6 +255,9 @@ def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db
         "password": user.password,
         "profile_image": user.profile_image
     }
-#2
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
